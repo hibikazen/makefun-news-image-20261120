@@ -1,25 +1,27 @@
 #!/usr/bin/env python3
-"""Entry for the make.fun bounty news-image-20261120.
+"""news-image-20261120 entrypoint: deliver entry.png to the output dir.
 
-Writes the front-page summary of Friday 20 November 2026 world news
-to /output/entry.png. The image is pre-rendered and stored in this
-repository; this program only copies it, using the standard library.
-It needs no network and writes the same bytes on every run.
+The grader runs this in a fresh container with no network, the
+repository mounted read-only and a writable output directory
+(/output, or MAKEFUN_OUTPUT_DIR outside the container). Standard
+library only: nothing is installed before it runs. The image is
+delivered exactly as committed; this script never redraws it.
 """
+
 import os
 import shutil
+from pathlib import Path
 
-HERE = os.path.dirname(os.path.abspath(__file__))
+HERE = Path(__file__).resolve().parent
+OUT = Path(os.environ.get("MAKEFUN_OUTPUT_DIR", "/output"))
 
 
 def main():
-    # Deterministic by construction: a byte copy of a fixed file.
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
-    os.makedirs(out_dir, exist_ok=True)
-    shutil.copyfile(
-        os.path.join(HERE, "entry.png"),
-        os.path.join(out_dir, "entry.png"),
-    )
+    src = HERE / "entry.png"
+    if not src.exists():
+        raise SystemExit(f"entry image missing: {src}")
+    OUT.mkdir(parents=True, exist_ok=True)
+    shutil.copyfile(src, OUT / "entry.png")
 
 
 if __name__ == "__main__":
